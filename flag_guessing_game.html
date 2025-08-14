@@ -1,0 +1,1327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flag Master - Professional Flag Guessing Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .star {
+            position: absolute;
+            background: #fff;
+            border-radius: 50%;
+            animation: twinkle 2s infinite alternate;
+        }
+
+        @keyframes twinkle {
+            0% { opacity: 0.3; }
+            100% { opacity: 1; }
+        }
+
+        .game-container {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 
+                0 32px 64px rgba(0, 0, 0, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            text-align: center;
+            max-width: 700px;
+            width: 95%;
+            backdrop-filter: blur(20px);
+            position: relative;
+            z-index: 1;
+            transition: all 0.3s ease;
+        }
+
+        .game-container:hover {
+            transform: translateY(-2px);
+            box-shadow: 
+                0 40px 80px rgba(0, 0, 0, 0.5),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        .header {
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            color: #fff;
+            margin-bottom: 10px;
+            font-size: 3em;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea, #764ba2, #f093fb);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            letter-spacing: -1px;
+        }
+
+        .subtitle {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1.1em;
+            font-weight: 300;
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .stat-card:hover::before {
+            left: 100%;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 5px;
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            color: rgba(255, 255, 255, 0.7);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 500;
+        }
+
+        .difficulty-selector {
+            margin-bottom: 30px;
+        }
+
+        .difficulty-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .difficulty-btn {
+            padding: 8px 16px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.05);
+            color: rgba(255, 255, 255, 0.7);
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+
+        .difficulty-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+
+        .difficulty-btn.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-color: #667eea;
+            color: #fff;
+        }
+
+        .progress-container {
+            margin-bottom: 30px;
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
+            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 3px;
+            position: relative;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .flag-section {
+            margin: 40px 0;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .flag-section::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #667eea, #764ba2, #f093fb, #667eea);
+            border-radius: 20px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: -1;
+        }
+
+        .flag-section:hover::before {
+            opacity: 0.5;
+        }
+
+        .flag-container {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .flag-image {
+            width: 280px;
+            height: 180px;
+            margin: 0 auto;
+            border-radius: 12px;
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.4),
+                0 0 0 1px rgba(255, 255, 255, 0.1);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            background: #f8f9fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+            color: #666;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .flag-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 12px;
+            transition: transform 0.3s ease;
+        }
+
+        .flag-image:hover img {
+            transform: scale(1.05);
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #667eea;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .question-text {
+            font-size: 1.3em;
+            color: #fff;
+            margin-top: 20px;
+            font-weight: 500;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 40px 0;
+        }
+
+        .option-btn {
+            padding: 18px 24px;
+            font-size: 1.1em;
+            font-weight: 500;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .option-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .option-btn:hover::before {
+            left: 100%;
+        }
+
+        .option-btn:hover {
+            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .option-btn:active {
+            transform: translateY(0);
+        }
+
+        .option-btn.correct {
+            background: linear-gradient(135deg, #48bb78, #38a169);
+            border-color: #48bb78;
+            animation: correctPulse 0.6s ease-in-out;
+        }
+
+        .option-btn.incorrect {
+            background: linear-gradient(135deg, #f56565, #e53e3e);
+            border-color: #f56565;
+            animation: incorrectShake 0.6s ease-in-out;
+        }
+
+        .option-btn.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        @keyframes correctPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @keyframes incorrectShake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .feedback-section {
+            margin: 30px 0;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .feedback {
+            font-size: 1.4em;
+            font-weight: 600;
+            padding: 15px 30px;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        .feedback.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .feedback.correct {
+            background: rgba(72, 187, 120, 0.2);
+            border: 1px solid rgba(72, 187, 120, 0.3);
+            color: #68d391;
+        }
+
+        .feedback.incorrect {
+            background: rgba(245, 101, 101, 0.2);
+            border: 1px solid rgba(245, 101, 101, 0.3);
+            color: #f56565;
+        }
+
+        .controls {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .control-btn {
+            padding: 16px 32px;
+            font-size: 1.1em;
+            font-weight: 600;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .control-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .control-btn:hover::before {
+            left: 100%;
+        }
+
+        .control-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+        }
+
+        .control-btn:active {
+            transform: translateY(0);
+        }
+
+        .control-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+        }
+
+        .restart-btn {
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            box-shadow: 0 4px 15px rgba(240, 147, 251, 0.4);
+        }
+
+        .restart-btn:hover {
+            box-shadow: 0 8px 25px rgba(240, 147, 251, 0.5);
+        }
+
+        .timer {
+            font-size: 1.2em;
+            color: #fff;
+            margin-bottom: 20px;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            display: inline-block;
+            font-weight: 600;
+        }
+
+        .timer.warning {
+            color: #f56565;
+            animation: timerPulse 1s infinite;
+        }
+
+        @keyframes timerPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        @media (max-width: 768px) {
+            .game-container {
+                padding: 20px;
+                margin: 20px;
+            }
+            
+            h1 {
+                font-size: 2.2em;
+            }
+            
+            .flag-image {
+                width: 220px;
+                height: 140px;
+            }
+            
+            .options-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="stars" id="starsContainer"></div>
+    
+    <div class="game-container">
+        <div class="header">
+            <h1>🏆 Flag Master</h1>
+            <p class="subtitle">Test your geography knowledge with flags from around the world</p>
+        </div>
+        
+        <div class="difficulty-selector">
+            <div class="difficulty-buttons">
+                <button class="difficulty-btn active" data-difficulty="easy">Easy (4 options)</button>
+                <button class="difficulty-btn" data-difficulty="medium">Medium (6 options)</button>
+                <button class="difficulty-btn" data-difficulty="hard">Hard (8 options)</button>
+            </div>
+        </div>
+
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-number" id="score">0</div>
+                <div class="stat-label">Score</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="question">1</div>
+                <div class="stat-label">Question</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="streak">0</div>
+                <div class="stat-label">Streak</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="accuracy">0%</div>
+                <div class="stat-label">Accuracy</div>
+            </div>
+        </div>
+
+        <div class="progress-container">
+            <div class="progress-info">
+                <span>Progress</span>
+                <span id="progressText">Question 1 of 10</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressBar"></div>
+            </div>
+        </div>
+
+        <div class="timer" id="timer">Time: 30s</div>
+
+        <div class="flag-section">
+            <div class="flag-container">
+                <div class="flag-image" id="flagContainer">
+                    <div class="loading-spinner"></div>
+                </div>
+            </div>
+            <h2 class="question-text" id="questionText">Which country does this flag belong to?</h2>
+        </div>
+
+        <div class="options-grid" id="optionsContainer">
+            <!-- Options will be generated by JavaScript -->
+        </div>
+
+        <div class="feedback-section">
+            <div class="feedback" id="feedback"></div>
+        </div>
+
+        <div class="controls">
+            <button class="control-btn" id="nextBtn" onclick="nextQuestion()" disabled>Next Question</button>
+            <button class="control-btn restart-btn" id="restartBtn" onclick="restartGame()">Restart Game</button>
+        </div>
+    </div>
+
+    <script>
+        // Game state
+        let currentQuestion = 0;
+        let score = 0;
+        let streak = 0;
+        let totalQuestions = 0;
+        let correctAnswers = 0;
+        let currentFlag = null;
+        let answered = false;
+        let usedFlags = [];
+        let difficulty = 'easy';
+        let timeLeft = 30;
+        let timer = null;
+        let questionsPerRound = 20; // Changed from 10 to 20
+        let sessionFlags = []; // New: store random 20 flags for this session
+
+        // Difficulty settings
+        const difficultySettings = {
+            easy: { options: 4, time: 30, points: 10 },
+            medium: { options: 6, time: 25, points: 15 },
+            hard: { options: 8, time: 20, points: 20 }
+        };
+
+        // Flag data using flag API
+        const flagData = [
+            { code: 'us', country: 'United States' },
+            { code: 'gb', country: 'United Kingdom' },
+            { code: 'fr', country: 'France' },
+            { code: 'de', country: 'Germany' },
+            { code: 'it', country: 'Italy' },
+            { code: 'es', country: 'Spain' },
+            { code: 'ca', country: 'Canada' },
+            { code: 'jp', country: 'Japan' },
+            { code: 'cn', country: 'China' },
+            { code: 'kr', country: 'South Korea' },
+            { code: 'br', country: 'Brazil' },
+            { code: 'ar', country: 'Argentina' },
+            { code: 'mx', country: 'Mexico' },
+            { code: 'au', country: 'Australia' },
+            { code: 'in', country: 'India' },
+            { code: 'ru', country: 'Russia' },
+            { code: 'za', country: 'South Africa' },
+            { code: 'eg', country: 'Egypt' },
+            { code: 'ng', country: 'Nigeria' },
+            { code: 'tr', country: 'Turkey' },
+            { code: 'nl', country: 'Netherlands' },
+            { code: 'se', country: 'Sweden' },
+            { code: 'no', country: 'Norway' },
+            { code: 'dk', country: 'Denmark' },
+            { code: 'fi', country: 'Finland' },
+            { code: 'ch', country: 'Switzerland' },
+            { code: 'at', country: 'Austria' },
+            { code: 'be', country: 'Belgium' },
+            { code: 'pt', country: 'Portugal' },
+            { code: 'gr', country: 'Greece' },
+            { code: 'ie', country: 'Ireland' },
+            { code: 'pl', country: 'Poland' },
+            { code: 'cz', country: 'Czech Republic' },
+            { code: 'hu', country: 'Hungary' },
+            { code: 'ro', country: 'Romania' },
+            { code: 'ua', country: 'Ukraine' },
+            { code: 'th', country: 'Thailand' },
+            { code: 'vn', country: 'Vietnam' },
+            { code: 'ph', country: 'Philippines' },
+            { code: 'id', country: 'Indonesia' },
+            { code: 'my', country: 'Malaysia' },
+            { code: 'sg', country: 'Singapore' },
+            { code: 'sa', country: 'Saudi Arabia' },
+            { code: 'ae', country: 'United Arab Emirates' },
+            { code: 'cl', country: 'Chile' },
+            { code: 'pe', country: 'Peru' },
+            { code: 'co', country: 'Colombia' },
+            { code: 've', country: 'Venezuela' },
+            { code: 'ke', country: 'Kenya' },
+            { code: 'et', country: 'Ethiopia' },
+            { code: 'gh', country: 'Ghana' },
+            { code: 'ma', country: 'Morocco' },
+            { code: 'tn', country: 'Tunisia' },
+            { code: 'dz', country: 'Algeria' },
+            { code: 'nz', country: 'New Zealand' },
+            { code: 'is', country: 'Iceland' },
+            { code: 'lu', country: 'Luxembourg' },
+            { code: 'mt', country: 'Malta' },
+            { code: 'cy', country: 'Cyprus' },
+            { code: 'ee', country: 'Estonia' },
+            { code: 'lv', country: 'Latvia' },
+            { code: 'lt', country: 'Lithuania' },
+            { code: 'sk', country: 'Slovakia' },
+            { code: 'si', country: 'Slovenia' },
+            { code: 'hr', country: 'Croatia' },
+            { code: 'ba', country: 'Bosnia and Herzegovina' },
+            { code: 'rs', country: 'Serbia' },
+            { code: 'me', country: 'Montenegro' },
+            { code: 'mk', country: 'North Macedonia' },
+            { code: 'al', country: 'Albania' },
+            { code: 'bg', country: 'Bulgaria' },
+            { code: 'md', country: 'Moldova' },
+            { code: 'by', country: 'Belarus' },
+            { code: 'kz', country: 'Kazakhstan' },
+            { code: 'uz', country: 'Uzbekistan' },
+            { code: 'kg', country: 'Kyrgyzstan' },
+            { code: 'tj', country: 'Tajikistan' },
+            { code: 'tm', country: 'Turkmenistan' },
+            { code: 'af', country: 'Afghanistan' },
+            { code: 'pk', country: 'Pakistan' },
+            { code: 'bd', country: 'Bangladesh' },
+            { code: 'lk', country: 'Sri Lanka' },
+            { code: 'mv', country: 'Maldives' },
+            { code: 'np', country: 'Nepal' },
+            { code: 'bt', country: 'Bhutan' },
+            { code: 'mm', country: 'Myanmar' },
+            { code: 'kh', country: 'Cambodia' },
+            { code: 'la', country: 'Laos' },
+            { code: 'bn', country: 'Brunei' },
+            { code: 'kp', country: 'North Korea' },
+            { code: 'mn', country: 'Mongolia' },
+            { code: 'ir', country: 'Iran' },
+            { code: 'iq', country: 'Iraq' },
+            { code: 'sy', country: 'Syria' },
+            { code: 'lb', country: 'Lebanon' },
+            { code: 'jo', country: 'Jordan' },
+            { code: 'kw', country: 'Kuwait' },
+            { code: 'bh', country: 'Bahrain' },
+            { code: 'qa', country: 'Qatar' },
+            { code: 'om', country: 'Oman' },
+            { code: 'ye', country: 'Yemen' }
+        ];
+
+        // Initialize stars background
+        function createStars() {
+            const starsContainer = document.getElementById('starsContainer');
+            const numberOfStars = 100;
+
+            for (let i = 0; i < numberOfStars; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.width = Math.random() * 3 + 1 + 'px';
+                star.style.height = star.style.width;
+                star.style.animationDelay = Math.random() * 2 + 's';
+                starsContainer.appendChild(star);
+            }
+        }
+
+        // Difficulty selector
+        document.querySelectorAll('.difficulty-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.difficulty-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                difficulty = btn.dataset.difficulty;
+                restartGame();
+            });
+        });
+
+        // Timer functions
+        function startTimer() {
+            timeLeft = difficultySettings[difficulty].time;
+            updateTimerDisplay();
+            
+            timer = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay();
+                
+                if (timeLeft <= 5) {
+                    document.getElementById('timer').classList.add('warning');
+                }
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    timeUp();
+                }
+            }, 1000);
+        }
+
+        function stopTimer() {
+            if (timer) {
+                clearInterval(timer);
+                timer = null;
+            }
+            document.getElementById('timer').classList.remove('warning');
+        }
+
+        function updateTimerDisplay() {
+            document.getElementById('timer').textContent = `Time: ${timeLeft}s`;
+        }
+
+        function timeUp() {
+            if (!answered) {
+                answered = true;
+                streak = 0;
+                showFeedback('⏰ Time\'s up!', 'incorrect');
+                highlightCorrectAnswer();
+                updateStats();
+                document.getElementById('nextBtn').disabled = false;
+            }
+        }
+
+        // Game functions with better flag sources
+        function getFlagUrl(countryCode) {
+            // Use more reliable flag sources with proper CORS headers
+            const flagSources = [
+                `https://flagcdn.com/w320/${countryCode.toLowerCase()}.png`,
+                `https://flagpedia.net/data/flags/w580/${countryCode.toLowerCase()}.png`,
+                `https://www.worldometers.info/img/flags/${countryCode.toLowerCase()}-flag.gif`
+            ];
+            return flagSources;
+        }
+
+        // Fallback emoji flags for better reliability
+        const flagEmojis = {
+            'us': '🇺🇸', 'gb': '🇬🇧', 'fr': '🇫🇷', 'de': '🇩🇪', 'it': '🇮🇹', 'es': '🇪🇸',
+            'ca': '🇨🇦', 'jp': '🇯🇵', 'cn': '🇨🇳', 'kr': '🇰🇷', 'br': '🇧🇷', 'ar': '🇦🇷',
+            'mx': '🇲🇽', 'au': '🇦🇺', 'in': '🇮🇳', 'ru': '🇷🇺', 'za': '🇿🇦', 'eg': '🇪🇬',
+            'ng': '🇳🇬', 'tr': '🇹🇷', 'nl': '🇳🇱', 'se': '🇸🇪', 'no': '🇳🇴', 'dk': '🇩🇰',
+            'fi': '🇫🇮', 'ch': '🇨🇭', 'at': '🇦🇹', 'be': '🇧🇪', 'pt': '🇵🇹', 'gr': '🇬🇷',
+            'ie': '🇮🇪', 'pl': '🇵🇱', 'cz': '🇨🇿', 'hu': '🇭🇺', 'ro': '🇷🇴', 'ua': '🇺🇦',
+            'th': '🇹🇭', 'vn': '🇻🇳', 'ph': '🇵🇭', 'id': '🇮🇩', 'my': '🇲🇾', 'sg': '🇸🇬',
+            'sa': '🇸🇦', 'ae': '🇦🇪', 'cl': '🇨🇱', 'pe': '🇵🇪', 'co': '🇨🇴', 've': '🇻🇪',
+            'ke': '🇰🇪', 'et': '🇪🇹', 'gh': '🇬🇭', 'ma': '🇲🇦', 'tn': '🇹🇳', 'dz': '🇩🇿',
+            'nz': '🇳🇿', 'is': '🇮🇸', 'lu': '🇱🇺', 'mt': '🇲🇹', 'cy': '🇨🇾', 'ee': '🇪🇪',
+            'lv': '🇱🇻', 'lt': '🇱🇹', 'sk': '🇸🇰', 'si': '🇸🇮', 'hr': '🇭🇷', 'ba': '🇧🇦',
+            'rs': '🇷🇸', 'me': '🇲🇪', 'mk': '🇲🇰', 'al': '🇦🇱', 'bg': '🇧🇬', 'md': '🇲🇩',
+            'by': '🇧🇾', 'kz': '🇰🇿', 'uz': '🇺🇿', 'kg': '🇰🇬', 'tj': '🇹🇯', 'tm': '🇹🇲',
+            'af': '🇦🇫', 'pk': '🇵🇰', 'bd': '🇧🇩', 'lk': '🇱🇰', 'mv': '🇲🇻', 'np': '🇳🇵',
+            'bt': '🇧🇹', 'mm': '🇲🇲', 'kh': '🇰🇭', 'la': '🇱🇦', 'bn': '🇧🇳', 'kp': '🇰🇵',
+            'mn': '🇲🇳', 'ir': '🇮🇷', 'iq': '🇮🇶', 'sy': '🇸🇾', 'lb': '🇱🇧', 'jo': '🇯🇴',
+            'kw': '🇰🇼', 'bh': '🇧🇭', 'qa': '🇶🇦', 'om': '🇴🇲', 'ye': '🇾🇪'
+        };
+
+        function shuffleArray(array) {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        }
+
+        function getRandomFlags(correct, count) {
+            const options = [correct];
+            // Use sessionFlags for wrong options to keep it within the same 20 flags
+            const availableFlags = sessionFlags.filter(f => f.country !== correct.country);
+            
+            while (options.length < count && availableFlags.length > 0) {
+                const randomIndex = Math.floor(Math.random() * availableFlags.length);
+                const randomFlag = availableFlags[randomIndex];
+                if (!options.find(opt => opt.country === randomFlag.country)) {
+                    options.push(randomFlag);
+                }
+                availableFlags.splice(randomIndex, 1);
+            }
+            
+            // If we don't have enough flags in session, fill from full flagData
+            if (options.length < count) {
+                const remainingFlags = flagData.filter(f => 
+                    !options.find(opt => opt.country === f.country)
+                );
+                
+                while (options.length < count && remainingFlags.length > 0) {
+                    const randomIndex = Math.floor(Math.random() * remainingFlags.length);
+                    const randomFlag = remainingFlags[randomIndex];
+                    options.push(randomFlag);
+                    remainingFlags.splice(randomIndex, 1);
+                }
+            }
+            
+            return shuffleArray(options);
+        }
+
+        function loadFlagImage(flagData) {
+            const flagContainer = document.getElementById('flagContainer');
+            flagContainer.innerHTML = '<div class="loading-spinner"></div>';
+            
+            // First try to load a real flag image
+            const flagSources = getFlagUrl(flagData.code);
+            let currentSourceIndex = 0;
+            let imageLoadTimeout;
+            
+            function tryLoadFlag() {
+                if (currentSourceIndex >= flagSources.length) {
+                    // All image sources failed, use CSS-based fallback
+                    showCSSFlag();
+                    return;
+                }
+                
+                // Clear any existing timeout
+                if (imageLoadTimeout) {
+                    clearTimeout(imageLoadTimeout);
+                }
+                
+                const img = new Image();
+                
+                // Set a timeout for loading
+                imageLoadTimeout = setTimeout(() => {
+                    currentSourceIndex++;
+                    tryLoadFlag();
+                }, 2000); // Reduced to 2 seconds
+                
+                img.onload = function() {
+                    clearTimeout(imageLoadTimeout);
+                    flagContainer.innerHTML = `<img src="${this.src}" alt="Flag of ${flagData.country}" />`;
+                };
+                
+                img.onerror = function() {
+                    clearTimeout(imageLoadTimeout);
+                    currentSourceIndex++;
+                    tryLoadFlag();
+                };
+                
+                // Add crossOrigin to prevent CORS issues
+                img.crossOrigin = "anonymous";
+                img.src = flagSources[currentSourceIndex];
+            }
+            
+            function showCSSFlag() {
+                // Create a CSS-based flag representation that works everywhere
+                const flagColors = getFlagColors(flagData.code);
+                const flagHtml = createCSSFlag(flagColors, flagData.country);
+                flagContainer.innerHTML = flagHtml;
+            }
+            
+            // Quick fallback for Claude's preview environment
+            setTimeout(() => {
+                if (flagContainer.innerHTML.includes('loading-spinner')) {
+                    showCSSFlag();
+                }
+            }, 1000); // Show CSS flag after 1 second if image hasn't loaded
+            
+            tryLoadFlag();
+        }
+
+        // CSS Flag colors and patterns for major countries
+        function getFlagColors(countryCode) {
+            const flagColors = {
+                'us': ['#B22234', '#FFFFFF', '#3C3B6E'], // Red, White, Blue
+                'gb': ['#012169', '#FFFFFF', '#C8102E'], // Blue, White, Red
+                'fr': ['#0055A4', '#FFFFFF', '#EF4135'], // Blue, White, Red
+                'de': ['#000000', '#DD0000', '#FFCE00'], // Black, Red, Gold
+                'it': ['#009246', '#FFFFFF', '#CE2B37'], // Green, White, Red
+                'es': ['#AA151B', '#F1BF00', '#AA151B'], // Red, Gold, Red
+                'ca': ['#FF0000', '#FFFFFF', '#FF0000'], // Red, White, Red
+                'jp': ['#FFFFFF', '#BC002D', '#FFFFFF'], // White, Red, White
+                'cn': ['#DE2910', '#FFDE00', '#DE2910'], // Red, Gold, Red
+                'br': ['#009739', '#FEDD00', '#012169'], // Green, Yellow, Blue
+                'ar': ['#74ACDF', '#FFFFFF', '#74ACDF'], // Light Blue, White, Light Blue
+                'au': ['#012169', '#FFFFFF', '#E4002B'], // Blue, White, Red
+                'in': ['#FF9933', '#FFFFFF', '#138808'], // Saffron, White, Green
+                'ru': ['#FFFFFF', '#0039A6', '#D52B1E'], // White, Blue, Red
+                'mx': ['#006847', '#FFFFFF', '#CE1126'], // Green, White, Red
+                // Add more countries as needed
+            };
+            return flagColors[countryCode.toLowerCase()] || ['#4A5568', '#FFFFFF', '#4A5568']; // Default gray
+        }
+
+        function createCSSFlag(colors, countryName) {
+            const [color1, color2, color3] = colors;
+            return `
+                <div style="
+                    width: 240px; 
+                    height: 160px; 
+                    margin: 0 auto; 
+                    border-radius: 12px; 
+                    overflow: hidden;
+                    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+                    position: relative;
+                ">
+                    <div style="
+                        width: 100%; 
+                        height: 33.33%; 
+                        background: ${color1};
+                    "></div>
+                    <div style="
+                        width: 100%; 
+                        height: 33.33%; 
+                        background: ${color2};
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        color: ${color2 === '#FFFFFF' ? '#333' : '#FFF'};
+                        font-weight: bold;
+                        font-size: 0.9em;
+                    ">${countryName.substring(0, 3).toUpperCase()}</div>
+                    <div style="
+                        width: 100%; 
+                        height: 33.33%; 
+                        background: ${color3};
+                    "></div>
+                    <div style="
+                        position: absolute;
+                        bottom: 5px;
+                        right: 8px;
+                        background: rgba(0,0,0,0.7);
+                        color: white;
+                        padding: 2px 8px;
+                        border-radius: 4px;
+                        font-size: 0.75em;
+                        font-weight: 500;
+                    ">${countryName}</div>
+                </div>
+            `;
+        }
+
+        function generateQuestion() {
+            // Initialize session flags if empty (first question or restart)
+            if (sessionFlags.length === 0) {
+                initializeSessionFlags();
+            }
+
+            // Reset if we've used all session flags
+            if (usedFlags.length >= sessionFlags.length) {
+                usedFlags = [];
+            }
+
+            // Get a flag we haven't used yet from the session flags
+            const availableFlags = sessionFlags.filter(flag => !usedFlags.includes(flag.country));
+            const randomIndex = Math.floor(Math.random() * availableFlags.length);
+            currentFlag = availableFlags[randomIndex];
+            usedFlags.push(currentFlag.country);
+
+            const optionCount = difficultySettings[difficulty].options;
+            const options = getRandomFlags(currentFlag, optionCount);
+            
+            loadFlagImage(currentFlag);
+            generateOptions(options);
+            
+            answered = false;
+            document.getElementById('nextBtn').disabled = true;
+            hideFeedback();
+            
+            updateProgress();
+            startTimer();
+        }
+
+        function initializeSessionFlags() {
+            // Randomly select 20 flags from all available flags for this session
+            const allFlags = [...flagData]; // Copy the array
+            sessionFlags = [];
+            
+            for (let i = 0; i < 20 && allFlags.length > 0; i++) {
+                const randomIndex = Math.floor(Math.random() * allFlags.length);
+                sessionFlags.push(allFlags[randomIndex]);
+                allFlags.splice(randomIndex, 1); // Remove selected flag from available pool
+            }
+            
+            console.log('Session flags initialized:', sessionFlags.map(f => f.country));
+        }
+
+        function generateOptions(options) {
+            const optionsContainer = document.getElementById('optionsContainer');
+            optionsContainer.innerHTML = '';
+            
+            options.forEach(option => {
+                const button = document.createElement('button');
+                button.className = 'option-btn';
+                button.textContent = option.country;
+                button.onclick = () => selectAnswer(option.country, button);
+                optionsContainer.appendChild(button);
+            });
+        }
+
+        function selectAnswer(selectedCountry, buttonElement) {
+            if (answered) return;
+            
+            answered = true;
+            stopTimer();
+            
+            const isCorrect = selectedCountry === currentFlag.country;
+            totalQuestions++;
+            
+            if (isCorrect) {
+                const points = difficultySettings[difficulty].points;
+                const timeBonus = Math.max(0, Math.floor(timeLeft / 5));
+                const streakBonus = Math.min(streak * 2, 20);
+                const totalPoints = points + timeBonus + streakBonus;
+                
+                score += totalPoints;
+                streak++;
+                correctAnswers++;
+                
+                let message = '🎉 Correct!';
+                if (timeBonus > 0) message += ` (+${timeBonus} time bonus)`;
+                if (streakBonus > 0) message += ` (+${streakBonus} streak bonus)`;
+                
+                showFeedback(message, 'correct');
+                buttonElement.classList.add('correct');
+            } else {
+                streak = 0;
+                showFeedback(`❌ Wrong! It was ${currentFlag.country}`, 'incorrect');
+                buttonElement.classList.add('incorrect');
+                highlightCorrectAnswer();
+            }
+            
+            disableAllOptions();
+            updateStats();
+            document.getElementById('nextBtn').disabled = false;
+        }
+
+        function highlightCorrectAnswer() {
+            const allButtons = document.querySelectorAll('.option-btn');
+            allButtons.forEach(btn => {
+                if (btn.textContent === currentFlag.country) {
+                    btn.classList.add('correct');
+                }
+            });
+        }
+
+        function disableAllOptions() {
+            const allButtons = document.querySelectorAll('.option-btn');
+            allButtons.forEach(btn => {
+                btn.classList.add('disabled');
+                btn.style.pointerEvents = 'none';
+            });
+        }
+
+        function showFeedback(message, type) {
+            const feedback = document.getElementById('feedback');
+            feedback.textContent = message;
+            feedback.className = `feedback ${type} show`;
+        }
+
+        function hideFeedback() {
+            const feedback = document.getElementById('feedback');
+            feedback.className = 'feedback';
+        }
+
+        function nextQuestion() {
+            currentQuestion++;
+            
+            if (currentQuestion >= questionsPerRound) {
+                showGameComplete();
+                return;
+            }
+            
+            generateQuestion();
+        }
+
+        function showGameComplete() {
+            const accuracy = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
+            const flagContainer = document.getElementById('flagContainer');
+            
+            flagContainer.innerHTML = `
+                <div style="padding: 20px; text-align: center;">
+                    <h2 style="color: #667eea; margin-bottom: 20px;">🏁 Game Complete!</h2>
+                    <div style="font-size: 1.2em; line-height: 1.6;">
+                        <div>Final Score: <strong>${score}</strong></div>
+                        <div>Questions: <strong>${correctAnswers}/${totalQuestions}</strong></div>
+                        <div>Accuracy: <strong>${accuracy}%</strong></div>
+                        <div>Best Streak: <strong>${Math.max(...streakHistory, streak)}</strong></div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('questionText').textContent = 'Great job! Ready for another round?';
+            document.getElementById('optionsContainer').innerHTML = '';
+            document.getElementById('nextBtn').style.display = 'none';
+            
+            showFeedback(getPerformanceMessage(accuracy), accuracy >= 70 ? 'correct' : 'incorrect');
+        }
+
+        function getPerformanceMessage(accuracy) {
+            if (accuracy >= 90) return '🏆 Outstanding! Geography master!';
+            if (accuracy >= 80) return '🌟 Excellent work! Well done!';
+            if (accuracy >= 70) return '👏 Good job! Keep it up!';
+            if (accuracy >= 50) return '📚 Not bad! Room for improvement!';
+            return '🎯 Keep practicing! You\'ll get better!';
+        }
+
+        let streakHistory = [];
+
+        function updateStats() {
+            document.getElementById('score').textContent = score;
+            document.getElementById('streak').textContent = streak;
+            
+            if (streak > 0) {
+                streakHistory.push(streak);
+            }
+            
+            const accuracy = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
+            document.getElementById('accuracy').textContent = accuracy + '%';
+        }
+
+        function updateProgress() {
+            const questionNumber = currentQuestion + 1;
+            document.getElementById('question').textContent = questionNumber;
+            document.getElementById('progressText').textContent = `Question ${questionNumber} of ${questionsPerRound}`;
+            
+            const progress = (currentQuestion / questionsPerRound) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+        }
+
+        function restartGame() {
+            currentQuestion = 0;
+            score = 0;
+            streak = 0;
+            totalQuestions = 0;
+            correctAnswers = 0;
+            usedFlags = [];
+            streakHistory = [];
+            answered = false;
+            
+            stopTimer();
+            
+            document.getElementById('nextBtn').style.display = 'inline-block';
+            document.getElementById('nextBtn').disabled = true;
+            
+            updateStats();
+            generateQuestion();
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (answered) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    if (!document.getElementById('nextBtn').disabled) {
+                        nextQuestion();
+                    }
+                }
+                return;
+            }
+            
+            // Number keys for options
+            const optionButtons = document.querySelectorAll('.option-btn');
+            const keyNum = parseInt(e.key);
+            if (keyNum >= 1 && keyNum <= optionButtons.length) {
+                e.preventDefault();
+                optionButtons[keyNum - 1].click();
+            }
+        });
+
+        // Add keyboard hint
+        function addKeyboardHints() {
+            const optionsContainer = document.getElementById('optionsContainer');
+            const observer = new MutationObserver(() => {
+                const buttons = optionsContainer.querySelectorAll('.option-btn');
+                buttons.forEach((btn, index) => {
+                    if (!btn.querySelector('.key-hint')) {
+                        const hint = document.createElement('span');
+                        hint.className = 'key-hint';
+                        hint.textContent = ` (${index + 1})`;
+                        hint.style.opacity = '0.6';
+                        hint.style.fontSize = '0.8em';
+                        btn.appendChild(hint);
+                    }
+                });
+            });
+            
+            observer.observe(optionsContainer, { childList: true });
+        }
+
+        // Sound effects (using Web Audio API)
+        function playSound(type) {
+            if (typeof AudioContext === 'undefined' && typeof webkitAudioContext === 'undefined') return;
+            
+            const audioContext = new (AudioContext || webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            let frequency, duration;
+            switch (type) {
+                case 'correct':
+                    frequency = 523.25; // C5
+                    duration = 0.3;
+                    break;
+                case 'incorrect':
+                    frequency = 220; // A3
+                    duration = 0.5;
+                    break;
+                case 'tick':
+                    frequency = 800;
+                    duration = 0.1;
+                    break;
+            }
+            
+            oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+            oscillator.type = type === 'incorrect' ? 'sawtooth' : 'sine';
+            
+            gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + duration);
+        }
+
+        // Enhanced selectAnswer with sound
+        const originalSelectAnswer = selectAnswer;
+        selectAnswer = function(selectedCountry, buttonElement) {
+            const result = originalSelectAnswer.call(this, selectedCountry, buttonElement);
+            
+            if (selectedCountry === currentFlag.country) {
+                playSound('correct');
+            } else {
+                playSound('incorrect');
+            }
+            
+            return result;
+        };
+
+        // Initialize game
+        function initGame() {
+            createStars();
+            addKeyboardHints();
+            generateQuestion();
+            
+            // Add some initial animation
+            setTimeout(() => {
+                document.querySelector('.game-container').style.opacity = '1';
+                document.querySelector('.game-container').style.transform = 'translateY(0)';
+            }, 100);
+        }
+
+        // Set initial styles for animation
+        document.querySelector('.game-container').style.opacity = '0';
+        document.querySelector('.game-container').style.transform = 'translateY(20px)';
+        document.querySelector('.game-container').style.transition = 'all 0.6s ease';
+
+        // Start the game
+        initGame();
+    </script>
+</body>
+</html>
